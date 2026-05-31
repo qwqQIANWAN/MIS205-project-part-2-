@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+
+# Environment
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+miniprogram/.auth/
+
+# Local uploads and generated files
+uploads/
+backend/uploads/
+_encoding_test.txt
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+miniprogram/.pai/
+admin/src/*.js
+admin/vite.config.js
+admin/vite.config.d.ts
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
