@@ -1,5 +1,16 @@
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Integer, Float, Text, func
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
@@ -27,14 +38,28 @@ class Association(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    members: Mapped[list["AssociationMember"]] = relationship(back_populates="association")
+    members: Mapped[list["AssociationMember"]] = relationship(
+        back_populates="association",
+        cascade="all, delete-orphan",
+    )
 
 class AssociationMember(Base):
     __tablename__ = "association_members"
+    __table_args__ = (
+        UniqueConstraint("association_id", "user_id", name="uq_association_member"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    association_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    association_id: Mapped[int] = mapped_column(
+        ForeignKey("associations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     joined_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     association: Mapped["Association"] = relationship(back_populates="members")

@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "校友卡小程序"
     VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
+    ENVIRONMENT: str = "development"
+    AUTO_CREATE_TABLES: bool = True
 
     # Database
     POSTGRES_HOST: str = "localhost"
@@ -34,7 +36,7 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
 
     # CORS
-    CORS_ORIGINS: list = ["*"]
+    CORS_ORIGINS: list[str] = ["*"]
 
     class Config:
         env_file = ".env"

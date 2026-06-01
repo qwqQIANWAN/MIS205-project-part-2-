@@ -1,0 +1,51 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 24rpx $page-padding 40rpx;
+}
+
+.card {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: 28rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: $shadow-card;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+}
+
+.meta {
+  display: block;
+  margin-top: 12rpx;
+  font-size: $font-size-sm;
+}
+
+.panel {
+  margin-top: 24rpx;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: 28rpx;
+  box-shadow: $shadow-card;
+}
+
+.status {
+  display: inline-flex;
+  padding: 10rpx 18rpx;
+  border-radius: $radius-round;
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.desc {
+  display: block;
+  margin-top: 16rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}

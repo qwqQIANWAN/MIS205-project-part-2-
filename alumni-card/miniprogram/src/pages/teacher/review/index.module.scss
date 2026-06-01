@@ -1,0 +1,72 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 24rpx $page-padding 48rpx;
+}
+
+.card {
+  margin-bottom: 20rpx;
+  padding: 28rpx;
+  border-radius: $radius-xl;
+  background: $color-bg-card;
+  box-shadow: $shadow-card;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.meta {
+  display: block;
+  margin-top: 10rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+.status {
+  display: inline-flex;
+  margin-top: 16rpx;
+  padding: 8rpx 16rpx;
+  border-radius: $radius-round;
+  background: rgba(15, 111, 255, 0.08);
+  color: $color-primary;
+  font-size: $font-size-xs;
+}
+
+.actionRow {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.approve,
+.reject {
+  flex: 1;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  @include flex-center;
+}
+
+.approve {
+  background: rgba(0, 180, 42, 0.12);
+}
+
+.reject {
+  background: rgba(245, 63, 63, 0.12);
+}
+
+.approveText {
+  color: $color-success;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.rejectText {
+  color: $color-error;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}

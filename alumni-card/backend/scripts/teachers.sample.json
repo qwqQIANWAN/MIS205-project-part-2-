@@ -1,0 +1,44 @@
+[
+  {
+    "name": "陈老师",
+    "phone": "13600000000",
+    "subject": "语文",
+    "title": "高三年级主任",
+    "is_active": true
+  },
+  {
+    "name": "王老师",
+    "phone": "13700000000",
+    "subject": "数学",
+    "title": "班主任",
+    "is_active": true
+  },
+  {
+    "name": "李老师",
+    "phone": "13800000001",
+    "subject": "英语",
+    "title": "教研组长",
+    "is_active": true
+  },
+  {
+    "name": "周老师",
+    "phone": "13800000002",
+    "subject": "物理",
+    "title": "高二班主任",
+    "is_active": true
+  },
+  {
+    "name": "刘老师",
+    "phone": "13800000003",
+    "subject": "化学",
+    "title": "德育处老师",
+    "is_active": true
+  },
+  {
+    "name": "黄老师",
+    "phone": "13800000004",
+    "subject": "历史",
+    "title": "年级组老师",
+    "is_active": true
+  }
+]

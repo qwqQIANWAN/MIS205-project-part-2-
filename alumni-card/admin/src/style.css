@@ -1,0 +1,21 @@
+:root {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #1f2937;
+  background: #f4f7fb;
+  --el-color-primary: #fe0000;
+  --el-color-primary-light-3: #fe4d4d;
+  --el-color-primary-light-5: #fe7f7f;
+  --el-color-primary-light-7: #feb2b2;
+  --el-color-primary-light-8: #fecaca;
+  --el-color-primary-light-9: #ffe5e5;
+  --el-color-primary-dark-2: #cb0000;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1280px;
+}

@@ -1,0 +1,82 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 24rpx $page-padding 48rpx;
+}
+
+.panel {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: 28rpx;
+  box-shadow: $shadow-card;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.desc {
+  display: block;
+  margin-top: 12rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  line-height: $line-height-loose;
+}
+
+.label {
+  display: block;
+  margin-top: 24rpx;
+  margin-bottom: 12rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+.input {
+  width: 100%;
+  min-height: 88rpx;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  box-sizing: border-box;
+  font-size: $font-size-md;
+}
+
+.uploadCard {
+  margin-top: 16rpx;
+  padding: 24rpx;
+  border-radius: $radius-lg;
+  border: 1rpx dashed rgba(15, 111, 255, 0.2);
+  background: rgba(15, 111, 255, 0.04);
+}
+
+.uploadText {
+  display: block;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.uploadHint {
+  display: block;
+  margin-top: 8rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-xs;
+}
+
+.submit {
+  margin-top: 32rpx;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  @include flex-center;
+}
+
+.submitText {
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}

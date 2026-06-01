@@ -1,8 +1,18 @@
-from datetime import datetime, date
-from sqlalchemy import String, DateTime, Integer, Enum as SAEnum, Text, Date, func
+from datetime import datetime
+import enum
+
+from sqlalchemy import (
+    DateTime,
+    Enum as SAEnum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
-import enum
 
 class ActivityStatus(str, enum.Enum):
     UPCOMING = "upcoming"
@@ -32,14 +42,28 @@ class Activity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    registrations: Mapped[list["ActivityRegistration"]] = relationship(back_populates="activity")
+    registrations: Mapped[list["ActivityRegistration"]] = relationship(
+        back_populates="activity",
+        cascade="all, delete-orphan",
+    )
 
 class ActivityRegistration(Base):
     __tablename__ = "activity_registrations"
+    __table_args__ = (
+        UniqueConstraint("activity_id", "user_id", name="uq_activity_registration"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    activity_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    activity_id: Mapped[int] = mapped_column(
+        ForeignKey("activities.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
     registered_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
