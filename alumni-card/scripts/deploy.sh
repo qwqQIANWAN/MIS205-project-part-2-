@@ -17,6 +17,19 @@ compose_cmd() {
   fi
 }
 
+remove_matching_containers() {
+  local pattern="$1"
+  local ids
+
+  ids="$(docker ps -aq --filter "name=${pattern}" 2>/dev/null || true)"
+  if [ -n "$ids" ]; then
+    echo "Removing stale containers matching ${pattern} ..."
+    for id in $ids; do
+      docker rm -f "$id" >/dev/null
+    done
+  fi
+}
+
 if [ -z "$REPO_ROOT" ]; then
   echo "Error: cannot locate Git repository from $PROJECT_DIR"
   exit 1
@@ -34,6 +47,8 @@ git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
 echo "Rebuilding and restarting containers ..."
+remove_matching_containers "alumni_backend"
+remove_matching_containers "alumni_nginx"
 compose_cmd --env-file "$PROJECT_DIR/.env" -f "$PROJECT_DIR/docker/docker-compose.yml" up -d --build --remove-orphans
 
 echo "Deployment completed."
