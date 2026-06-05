@@ -36,17 +36,25 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new Error('接口基础地址未配置');
   }
 
-  const response = await Taro.request<{ data: T } | T>({
-    url: `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`,
-    method: options.method || 'GET',
-    data: options.data,
-    timeout: 8000,
-    header: token
-      ? {
-          Authorization: `Bearer ${token}`,
-        }
-      : undefined,
-  });
+  let response: Taro.request.SuccessCallbackResult<{ data: T } | T>;
+  try {
+    response = await Taro.request<{ data: T } | T>({
+      url: `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`,
+      method: options.method || 'GET',
+      data: options.data,
+      timeout: 8000,
+      header: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : undefined,
+    });
+  } catch (error) {
+    const errMsg =
+      error && typeof error === 'object' && 'errMsg' in error ? String((error as { errMsg?: string }).errMsg || '') : '';
+    const prefix = baseUrl.startsWith('http://') ? '当前使用的是 http 地址，真机环境建议改为 https 或内网穿透地址。' : '';
+    throw new Error(`${prefix}${errMsg || '网络请求失败，请检查后端服务是否已启动'}`.trim());
+  }
 
   if (response.statusCode >= 400) {
     throw new Error(getErrorMessage(response.data, response.statusCode));

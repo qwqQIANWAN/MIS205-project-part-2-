@@ -1,0 +1,118 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: #ffffff;
+  padding-bottom: 140rpx;
+}
+
+.topBanner {
+  padding: 20rpx 20rpx 0;
+  background: linear-gradient(180deg, #4fd2cf 0%, #57d9d2 100%);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  height: 66rpx;
+  padding: 0 24rpx;
+  background: #ffffff;
+  border-radius: 34rpx;
+}
+
+.searchIcon {
+  margin-right: 14rpx;
+  font-size: 28rpx;
+  color: #b7b7b7;
+}
+
+.searchInput {
+  flex: 1;
+  height: 66rpx;
+  font-size: 28rpx;
+}
+
+.searchPlaceholder {
+  color: #c8c8c8;
+}
+
+.tabRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 18rpx 18rpx;
+}
+
+.tabText {
+  position: relative;
+  font-size: 30rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.tabTextActive {
+  font-weight: $font-weight-semibold;
+}
+
+.tabTextActive::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8rpx;
+  width: 44rpx;
+  height: 4rpx;
+  border-radius: 4rpx;
+  background: #ffffff;
+  transform: translateX(-50%);
+}
+
+.listWrap {
+  background: #ffffff;
+}
+
+.letter {
+  display: block;
+  padding: 16rpx 24rpx 8rpx;
+  color: #c6c6c6;
+  font-size: 28rpx;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  height: 118rpx;
+  padding: 0 26rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.logo {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 34rpx;
+  color: #333333;
+}
+
+.textWrap {
+  display: flex;
+  flex-direction: column;
+  margin-left: 24rpx;
+}
+
+.subText {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #a0a0a0;
+  line-height: 1.5;
+}
+
+.emptyText {
+  display: block;
+  padding: 56rpx 0;
+  text-align: center;
+  color: #999999;
+  font-size: 28rpx;
+}

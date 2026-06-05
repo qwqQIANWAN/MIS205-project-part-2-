@@ -25,6 +25,7 @@ function AppointmentPage() {
           <Text className={styles.meta}>同行人数：{item.companionCount}</Text>
           {item.teacherComment ? <Text className={styles.meta}>审批意见：{item.teacherComment}</Text> : null}
           {item.rejectReason ? <Text className={styles.meta}>拒绝原因：{item.rejectReason}</Text> : null}
+          {item.qrCode ? <Text className={styles.meta}>入校二维码：已生成，可在管理端或后续页面查看</Text> : null}
           <Text className={styles.status}>{item.status}</Text>
         </View>
       ))}

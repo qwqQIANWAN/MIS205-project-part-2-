@@ -135,6 +135,7 @@ interface InterviewApiItem {
 
 const STORAGE_KEY_API_BASE_URL = 'alumni-admin-api-base-url';
 const STORAGE_KEY_TOKEN = 'alumni-admin-token';
+const STORAGE_KEY_SIMULATE_APPROVAL = 'alumni-admin-simulate-approval';
 
 const menuItems = [
   { key: 'dashboard', label: '数据看板' },
@@ -255,6 +256,7 @@ const demoInterviews: InterviewApiItem[] = [
 const activeMenu = ref<MenuKey>('dashboard');
 const apiBaseUrl = ref(localStorage.getItem(STORAGE_KEY_API_BASE_URL) || '');
 const token = ref(localStorage.getItem(STORAGE_KEY_TOKEN) || '');
+const simulateApproval = ref(localStorage.getItem(STORAGE_KEY_SIMULATE_APPROVAL) !== '0');
 const loading = ref(false);
 const teacherSaving = ref(false);
 const detailVisible = ref(false);
@@ -279,9 +281,21 @@ const teacherForm = reactive({
   title: '',
 });
 
+const articleForm = reactive({
+  title: '',
+  source: '学校公众号',
+  summary: '',
+  url: '',
+  cover_image: '',
+  category: '公众号',
+  is_published: true,
+});
+
 const canUseLiveApi = computed(() => Boolean(normalizeBaseUrl(apiBaseUrl.value) && token.value.trim()));
+const canSimulateApproval = computed(() => !canUseLiveApi.value && simulateApproval.value);
 const currentMenuLabel = computed(() => menuItems.find((item) => item.key === activeMenu.value)?.label || '数据列表');
 const showCreateTeacher = computed(() => activeMenu.value === 'teachers');
+const showCreateArticle = computed(() => activeMenu.value === 'articles');
 
 const currentRows = computed(() => {
   switch (activeMenu.value) {
@@ -505,9 +519,12 @@ function formatCell(prop: string, value: unknown) {
 }
 
 function loadDemoData() {
-  alumniRows.value = demoAlumni;
-  teacherRows.value = demoTeachers;
-  appointmentRows.value = demoAppointments;
+  alumniRows.value = demoAlumni.map((item) => ({ ...item }));
+  teacherRows.value = demoTeachers.map((item) => ({ ...item }));
+  appointmentRows.value = demoAppointments.map((item) => ({
+    ...item,
+    companions: item.companions ? item.companions.map((companion) => ({ ...companion })) : [],
+  }));
   associationRows.value = demoAssociations;
   activityRows.value = demoActivities;
   articleRows.value = demoArticles;
@@ -518,6 +535,55 @@ function loadDemoData() {
     { label: '待处理预约', value: '1', hint: '按参访老师自动分配审批' },
     { label: '已发布内容', value: '2', hint: '活动与文章可继续扩展' },
   ];
+}
+
+function updateDemoStats() {
+  stats.value = [
+    {
+      label: '待审核校友',
+      value: String(alumniRows.value.filter((item) => item.verification_status === 'pending').length),
+      hint: '注册后待管理员人工审核',
+    },
+    {
+      label: '老师档案',
+      value: String(teacherRows.value.length),
+      hint: '支持老师绑定小程序账号',
+    },
+    {
+      label: '待处理预约',
+      value: String(appointmentRows.value.filter((item) => item.status === 'pending').length),
+      hint: '按参访老师自动分配审批',
+    },
+    {
+      label: '已发布内容',
+      value: '2',
+      hint: '活动与文章可继续扩展',
+    },
+  ];
+}
+
+function applyDemoAction(action: string, row: Record<string, unknown>) {
+  if (activeMenu.value === 'alumni') {
+    const target = alumniRows.value.find((item) => item.id === row.id);
+    if (!target) return;
+    target.verification_status = action === '通过' ? 'approved' : 'rejected';
+    target.verification_remark = action === '通过' ? '模拟审批通过，可继续预约入校' : '模拟审批驳回，请补充资料';
+    target.verified_at = new Date().toISOString();
+    updateDemoStats();
+    ElMessage.success(`已${action === '通过' ? '通过' : '驳回'}该校友申请。`);
+    return;
+  }
+
+  if (activeMenu.value === 'appointments') {
+    const target = appointmentRows.value.find((item) => item.id === row.id);
+    if (!target) return;
+    target.status = action === '通过' ? 'approved' : 'rejected';
+    target.teacher_comment = action === '通过' ? '模拟审批通过，请按时到校' : '模拟审批驳回，请调整行程后重提';
+    target.reject_reason = action === '通过' ? null : '模拟审批驳回，请调整预约时间';
+    target.teacher_reviewed_at = new Date().toISOString();
+    updateDemoStats();
+    ElMessage.success(`已${action === '通过' ? '通过' : '驳回'}该预约申请。`);
+  }
 }
 
 async function loadDashboard() {
@@ -625,6 +691,16 @@ function resetTeacherForm() {
   teacherForm.title = '';
 }
 
+function resetArticleForm() {
+  articleForm.title = '';
+  articleForm.source = '学校公众号';
+  articleForm.summary = '';
+  articleForm.url = '';
+  articleForm.cover_image = '';
+  articleForm.category = '公众号';
+  articleForm.is_published = true;
+}
+
 async function createTeacher() {
   if (!canUseLiveApi.value) {
     ElMessage.warning('请先连接后台接口后再创建老师档案。');
@@ -650,6 +726,38 @@ async function createTeacher() {
   } catch (error) {
     console.error('[Admin] create teacher failed', error);
     ElMessage.error('老师档案创建失败。');
+  } finally {
+    teacherSaving.value = false;
+  }
+}
+
+async function createArticle() {
+  if (!canUseLiveApi.value) {
+    ElMessage.warning('请先连接后台接口后再创建文章。');
+    return;
+  }
+  if (!articleForm.title.trim() || !articleForm.url.trim()) {
+    ElMessage.warning('请至少填写文章标题和原文链接。');
+    return;
+  }
+
+  teacherSaving.value = true;
+  try {
+    await apiPost('/articles', {
+      title: articleForm.title.trim(),
+      source: articleForm.source.trim() || '学校公众号',
+      summary: articleForm.summary.trim() || undefined,
+      url: articleForm.url.trim(),
+      cover_image: articleForm.cover_image.trim() || undefined,
+      category: articleForm.category.trim() || '公众号',
+      is_published: articleForm.is_published,
+    });
+    ElMessage.success('公众号文章已保存。');
+    resetArticleForm();
+    await loadMenuRecords('articles');
+  } catch (error) {
+    console.error('[Admin] create article failed', error);
+    ElMessage.error('文章保存失败。');
   } finally {
     teacherSaving.value = false;
   }
@@ -780,7 +888,11 @@ async function handleAction(action: string, row: Record<string, unknown>) {
   }
 
   if (!canUseLiveApi.value) {
-    ElMessage.warning('演示模式下仅支持查看，连接接口后可执行审批。');
+    if (!canSimulateApproval.value) {
+      ElMessage.warning('当前为本地演示数据，开启“模拟审批”后可直接演示通过与拒绝。');
+      return;
+    }
+    applyDemoAction(action, row);
     return;
   }
 
@@ -857,6 +969,13 @@ onMounted(() => {
         <div class='headerTools'>
           <el-input v-model='apiBaseUrl' placeholder='接口基础地址，例如 http://127.0.0.1/api/v1' class='input' />
           <el-input v-model='token' placeholder='管理员令牌' class='input' show-password />
+          <el-switch
+            v-model='simulateApproval'
+            inline-prompt
+            active-text='模拟审批'
+            inactive-text='只读'
+            @change="localStorage.setItem(STORAGE_KEY_SIMULATE_APPROVAL, simulateApproval ? '1' : '0')"
+          />
           <el-button type='primary' @click='applyConnectionSettings'>连接接口</el-button>
         </div>
       </el-header>
@@ -866,6 +985,14 @@ onMounted(() => {
           <el-alert
             :title="canUseLiveApi ? '当前展示实时后台数据' : '当前展示本地演示数据，连接接口后切换为实时数据'"
             type='info'
+            show-icon
+            :closable='false'
+            class='notice'
+          />
+          <el-alert
+            v-if="!canUseLiveApi"
+            :title="canSimulateApproval ? '模拟审批已开启，当前可直接在后台演示“通过 / 拒绝”操作。' : '当前为只读演示模式，打开右上角“模拟审批”即可演示审核流程。'"
+            type='success'
             show-icon
             :closable='false'
             class='notice'
@@ -936,6 +1063,50 @@ onMounted(() => {
                 <el-button type='primary' :loading='teacherSaving' @click='createTeacher'>新增老师</el-button>
                 <el-button @click='resetTeacherForm'>清空</el-button>
               </el-form-item>
+            </el-form>
+          </div>
+
+          <div v-if="showCreateArticle" class='teacherFormWrap'>
+            <el-form label-position='top' class='articleForm'>
+              <el-row :gutter='16'>
+                <el-col :span='8'>
+                  <el-form-item label='文章标题'>
+                    <el-input v-model='articleForm.title' placeholder='请输入公众号文章标题' />
+                  </el-form-item>
+                </el-col>
+                <el-col :span='8'>
+                  <el-form-item label='文章来源'>
+                    <el-input v-model='articleForm.source' placeholder='例如 学校公众号' />
+                  </el-form-item>
+                </el-col>
+                <el-col :span='8'>
+                  <el-form-item label='文章分类'>
+                    <el-input v-model='articleForm.category' placeholder='例如 公众号' />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-form-item label='文章摘要'>
+                <el-input v-model='articleForm.summary' type='textarea' :rows='2' placeholder='请输入文章摘要' />
+              </el-form-item>
+              <el-row :gutter='16'>
+                <el-col :span='12'>
+                  <el-form-item label='原文链接'>
+                    <el-input v-model='articleForm.url' placeholder='请输入公众号文章 URL' />
+                  </el-form-item>
+                </el-col>
+                <el-col :span='12'>
+                  <el-form-item label='封面图链接'>
+                    <el-input v-model='articleForm.cover_image' placeholder='可选：封面图 URL' />
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <div class='articleToolbar'>
+                <el-switch v-model='articleForm.is_published' inline-prompt active-text='已发布' inactive-text='草稿' />
+                <div class='toolbar'>
+                  <el-button type='primary' :loading='teacherSaving' @click='createArticle'>保存文章</el-button>
+                  <el-button @click='resetArticleForm'>清空</el-button>
+                </div>
+              </div>
             </el-form>
           </div>
 
@@ -1012,6 +1183,8 @@ onMounted(() => {
 .toolbar { display: flex; gap: 12px; }
 .teacherFormWrap { margin-bottom: 18px; padding: 16px 16px 4px; background: #f8fafc; border-radius: 14px; }
 .teacherForm { display: flex; flex-wrap: wrap; }
+.articleForm :deep(.el-form-item) { margin-bottom: 14px; }
+.articleToolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 12px; }
 .detailRawTitle { margin-bottom: 16px; font-size: 18px; font-weight: 700; color: #0f172a; }
 .detailGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .detailItem { padding: 14px; background: #f8fafc; border-radius: 12px; }

@@ -6,10 +6,10 @@ import type { HomeData } from '@/types';
 import styles from './index.module.scss';
 
 const quickEntries = [
-  { name: '我的校友卡', hint: '查看认证状态与电子校友卡', url: '/pages/alumni-card/index' },
-  { name: '返校预约', hint: '提交返校申请并查看进度', url: '/pages/appointment/index' },
-  { name: '文章资讯', hint: '查看学校动态与校友通知', url: '/pages/articles/index' },
-  { name: '校友风采', hint: '浏览优秀校友故事', url: '/pages/interviews/index' },
+  { name: '校友', hint: '查看校友卡、认证状态与人物风采', url: '/pages/alumni/index' },
+  { name: '组织', hint: '查看地区组织与校友会联络信息', url: '/pages/organization/index' },
+  { name: '服务', hint: '返校预约、活动报名与老师审批入口', url: '/pages/service/index' },
+  { name: '注册', hint: '完成登录、注册、认证与老师绑定', url: '/pages/register/index' },
 ];
 
 function IndexPage() {

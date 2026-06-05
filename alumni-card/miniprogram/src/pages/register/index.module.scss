@@ -1,0 +1,100 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 24rpx $page-padding 140rpx;
+}
+
+.hero {
+  padding: 36rpx 32rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #ffffff;
+  box-shadow: $shadow-card;
+}
+
+.heroTitle {
+  display: block;
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+}
+
+.heroDesc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+}
+
+.stepCard,
+.actionCard {
+  margin-top: 20rpx;
+  padding: 28rpx;
+  border-radius: 22rpx;
+  background: #ffffff;
+  box-shadow: $shadow-card;
+}
+
+.stepTitle,
+.cardTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}
+
+.stepValue {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: #7c3aed;
+}
+
+.stepDesc,
+.cardDesc {
+  display: block;
+  margin-top: 10rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  line-height: 1.7;
+}
+
+.primaryAction,
+.secondaryAction,
+.logoutAction {
+  margin-top: 24rpx;
+  height: 84rpx;
+  border-radius: $radius-button;
+  @include flex-center;
+}
+
+.primaryAction {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.secondaryAction {
+  background: #f4f7fb;
+}
+
+.logoutAction {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.primaryActionText,
+.secondaryActionText,
+.logoutText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}
+
+.primaryActionText {
+  color: #ffffff;
+}
+
+.secondaryActionText {
+  color: #7c3aed;
+}
+
+.logoutText {
+  color: #dc2626;
+}

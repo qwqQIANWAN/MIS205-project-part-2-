@@ -9,7 +9,7 @@ from app.core.database import get_db
 from app.models.user import User, AlumnusInfo, VerificationStatus
 from app.schemas.alumni import AlumnusListItem, AlumnusDetailOut, VerifyRequest
 from app.schemas.common import ApiResponse, PaginatedData
-from app.api.deps import get_current_admin
+from app.api.deps import get_current_admin, get_current_user
 
 router = APIRouter()
 
@@ -100,6 +100,77 @@ async def verify_alumnus(
 
     await db.commit()
     return ApiResponse(message="操作成功")
+
+
+@router.get(
+    "/directory",
+    response_model=ApiResponse[PaginatedData[AlumnusListItem]],
+)
+async def alumni_directory(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    keyword: str = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    query = (
+        select(AlumnusInfo)
+        .options(selectinload(AlumnusInfo.user))
+        .where(AlumnusInfo.verification_status == VerificationStatus.APPROVED)
+    )
+    count_query = (
+        select(func.count())
+        .select_from(AlumnusInfo)
+        .where(AlumnusInfo.verification_status == VerificationStatus.APPROVED)
+    )
+
+    if keyword:
+        keyword_filter = (
+            AlumnusInfo.real_name.ilike(f"%{keyword}%")
+            | AlumnusInfo.class_name.ilike(f"%{keyword}%")
+            | AlumnusInfo.current_university.ilike(f"%{keyword}%")
+            | AlumnusInfo.current_college.ilike(f"%{keyword}%")
+            | AlumnusInfo.current_major.ilike(f"%{keyword}%")
+        )
+        query = query.where(keyword_filter)
+        count_query = count_query.where(keyword_filter)
+
+    total = (await db.execute(count_query)).scalar()
+    offset = (page - 1) * page_size
+    items = (
+        await db.execute(
+            query.order_by(AlumnusInfo.verified_at.desc(), AlumnusInfo.id.desc())
+            .offset(offset)
+            .limit(page_size)
+        )
+    ).scalars().all()
+
+    return ApiResponse(
+        data=PaginatedData(
+            items=[
+                AlumnusListItem(
+                    id=info.id,
+                    user_id=info.user_id,
+                    real_name=info.real_name,
+                    student_id=info.student_id,
+                    class_name=info.class_name,
+                    graduation_year=info.graduation_year,
+                    current_university=info.current_university,
+                    current_college=info.current_college,
+                    current_major=info.current_major,
+                    verification_status=info.verification_status.value,
+                    verified_at=info.verified_at,
+                    nickname=info.user.nickname if info.user else None,
+                    avatar_url=info.user.avatar_url if info.user else None,
+                    phone=info.user.phone if info.user else None,
+                )
+                for info in items
+            ],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    )
 
 
 @router.get(

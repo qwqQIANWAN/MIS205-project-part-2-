@@ -11,6 +11,7 @@ import {
 } from '@/data/mock';
 import type {
   ActivityItem,
+  AlumniDirectoryItem,
   AppointmentItem,
   ArticleItem,
   AssociationItem,
@@ -41,11 +42,25 @@ interface BackendAssociation {
   name: string;
   province?: string | null;
   city?: string | null;
+  district?: string | null;
   address?: string | null;
+  cover_image?: string | null;
   member_count?: number | null;
   president_name?: string | null;
   contact_name?: string | null;
   description?: string | null;
+}
+
+interface BackendAlumnus {
+  id: number;
+  user_id: number;
+  real_name: string;
+  class_name?: string | null;
+  graduation_year?: string | null;
+  current_university?: string | null;
+  current_college?: string | null;
+  current_major?: string | null;
+  avatar_url?: string | null;
 }
 
 interface BackendActivity {
@@ -69,6 +84,8 @@ interface BackendArticle {
   url: string;
   cover_image?: string | null;
   source?: string | null;
+  category?: string | null;
+  created_at?: string;
 }
 
 interface BackendInterview {
@@ -129,6 +146,7 @@ interface BackendAppointment {
   purpose?: string | null;
   status?: string | null;
   companion_count?: number | null;
+  qr_code?: string | null;
   teacher_id?: number | null;
   teacher_name?: string | null;
   teacher_title?: string | null;
@@ -288,6 +306,23 @@ function mapAssociation(item: BackendAssociation): AssociationItem {
     memberCount: item.member_count || 0,
     presidentName: item.president_name || item.contact_name || '待补充',
     description: item.description || '区域校友联络组织',
+    coverImage: resolveAssetUrl(item.cover_image),
+    province: item.province || '',
+    district: item.district || '',
+  };
+}
+
+function mapAlumnus(item: BackendAlumnus): AlumniDirectoryItem {
+  return {
+    id: item.id,
+    userId: item.user_id,
+    realName: item.real_name,
+    avatarUrl: resolveAssetUrl(item.avatar_url),
+    className: item.class_name || '',
+    graduationYear: item.graduation_year || '',
+    currentUniversity: item.current_university || '',
+    currentCollege: item.current_college || '',
+    currentMajor: item.current_major || '',
   };
 }
 
@@ -314,6 +349,8 @@ function mapArticle(item: BackendArticle): ArticleItem {
     url: item.url,
     coverImage: resolveAssetUrl(item.cover_image),
     source: item.source || '官方公众号',
+    category: item.category || '公众号文章',
+    createdAt: item.created_at,
   };
 }
 
@@ -376,6 +413,7 @@ function mapAppointment(item: BackendAppointment): AppointmentItem {
     teacherComment: item.teacher_comment || '',
     teacherReviewedAt: item.teacher_reviewed_at || '',
     rejectReason: item.reject_reason || '',
+    qrCode: resolveAssetUrl(item.qr_code),
     realName: item.real_name || '',
     companions: item.companions?.map(mapCompanion) || [],
   };
@@ -430,6 +468,9 @@ export async function loginWithWechat(): Promise<UserProfile> {
     return getProfile();
   } catch (error) {
     const message = getErrorMessage(error);
+    if (message.includes('接口基础地址未配置')) {
+      throw new Error('请先配置小程序接口地址后再登录');
+    }
     if (message.includes('暂时不支持 API') || message.includes('login:fail')) {
       console.info('[MiniApp] login api unsupported, fallback to preview profile', error);
       return enablePreviewLogin();
@@ -585,6 +626,26 @@ export async function getAssociations(): Promise<AssociationItem[]> {
   }
 }
 
+export async function getAlumniDirectory(keyword = ''): Promise<AlumniDirectoryItem[]> {
+  if (!hasToken() || shouldUseMockContentApi()) {
+    return mockInterviews.map((item, index) => ({
+      id: item.id,
+      userId: index + 1,
+      realName: item.alumnusName,
+      avatarUrl: item.coverImage,
+      currentMajor: item.currentPosition,
+    }));
+  }
+  try {
+    const query = keyword.trim() ? `?keyword=${encodeURIComponent(keyword.trim())}` : '';
+    const response = await request<PaginatedResult<BackendAlumnus>>(`/alumni/directory${query}`);
+    return response.items?.map(mapAlumnus) || [];
+  } catch (error) {
+    console.error('[MiniApp] getAlumniDirectory failed', error);
+    return [];
+  }
+}
+
 export async function getActivities(): Promise<ActivityItem[]> {
   if (!hasToken() || shouldUseMockContentApi()) return mockActivities;
   try {
@@ -617,6 +678,19 @@ export async function getArticles(): Promise<ArticleItem[]> {
   } catch (error) {
     console.error('[MiniApp] getArticles failed', error);
     return mockArticles;
+  }
+}
+
+export async function getArticleDetail(id: number): Promise<ArticleItem> {
+  if (!hasToken() || shouldUseMockContentApi()) {
+    return mockArticles.find((item) => item.id === id) || mockArticles[0];
+  }
+  try {
+    const response = await request<BackendArticle>(`/articles/${id}`);
+    return mapArticle(response);
+  } catch (error) {
+    console.error('[MiniApp] getArticleDetail failed', error);
+    return mockArticles.find((item) => item.id === id) || mockArticles[0];
   }
 }
 
@@ -712,14 +786,14 @@ export async function getTeacherAppointments(): Promise<AppointmentItem[]> {
   return response.map(mapAppointment);
 }
 
-export async function approveTeacherAppointment(id: number): Promise<void> {
+export async function approveTeacherAppointment(id: number, remark = '老师审批通过'): Promise<void> {
   if (isPreviewMockToken()) {
     const nextAppointments = getLocalAppointments().map((item) =>
       item.id === id
         ? {
             ...item,
             status: '已通过',
-            teacherComment: '老师审批通过',
+            teacherComment: remark,
             teacherReviewedAt: new Date().toISOString(),
             rejectReason: '',
           }
@@ -732,22 +806,22 @@ export async function approveTeacherAppointment(id: number): Promise<void> {
   await request(`/teachers/me/appointments/${id}/approve`, {
     method: 'PUT',
     data: {
-      remark: '老师审批通过',
+      remark,
       qr_code_expire_days: 1,
     },
   });
 }
 
-export async function rejectTeacherAppointment(id: number): Promise<void> {
+export async function rejectTeacherAppointment(id: number, reason = '老师暂不同意本次返校申请'): Promise<void> {
   if (isPreviewMockToken()) {
     const nextAppointments = getLocalAppointments().map((item) =>
       item.id === id
         ? {
             ...item,
             status: '已拒绝',
-            teacherComment: '老师暂不同意本次返校申请',
+            teacherComment: reason,
             teacherReviewedAt: new Date().toISOString(),
-            rejectReason: '老师暂不同意本次返校申请',
+            rejectReason: reason,
           }
         : item,
     );
@@ -758,7 +832,7 @@ export async function rejectTeacherAppointment(id: number): Promise<void> {
   await request(`/teachers/me/appointments/${id}/reject`, {
     method: 'PUT',
     data: {
-      reason: '老师暂不同意本次返校申请',
+      reason,
     },
   });
 }

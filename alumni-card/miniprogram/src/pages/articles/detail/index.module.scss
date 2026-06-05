@@ -1,0 +1,51 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 24rpx $page-padding 120rpx;
+}
+
+.cover {
+  width: 100%;
+  height: 320rpx;
+  border-radius: 24rpx;
+  box-shadow: $shadow-card;
+}
+
+.card {
+  margin-top: 20rpx;
+  padding: 32rpx 28rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: $shadow-card;
+}
+
+.title {
+  display: block;
+  font-size: 38rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.5;
+}
+
+.meta,
+.summary {
+  display: block;
+  margin-top: 14rpx;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  line-height: 1.8;
+}
+
+.action {
+  margin-top: 28rpx;
+  height: 88rpx;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, #fe0000 0%, #ff6b6b 100%);
+  @include flex-center;
+}
+
+.actionText {
+  color: #ffffff;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}

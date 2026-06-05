@@ -37,6 +37,25 @@
   font-size: $font-size-xs;
 }
 
+.remarkBox {
+  margin-top: 18rpx;
+}
+
+.remarkLabel {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.remarkInput {
+  min-height: 84rpx;
+  padding: 22rpx 24rpx;
+  border-radius: $radius-lg;
+  background: #f8fafc;
+  font-size: $font-size-sm;
+}
+
 .actionRow {
   display: flex;
   gap: 16rpx;

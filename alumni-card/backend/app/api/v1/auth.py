@@ -1,3 +1,5 @@
+import json
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -29,36 +31,64 @@ WECHAT_API = "https://api.weixin.qq.com/sns/jscode2session"
 async def wechat_login(
     request: WechatLoginRequest, db: AsyncSession = Depends(get_db)
 ):
-    if not settings.WECHAT_APPID or not settings.WECHAT_SECRET:
+    appid = settings.WECHAT_APPID.strip()
+    secret = settings.WECHAT_SECRET.strip()
+    code = request.code.strip()
+
+    if not appid or not secret:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="后端未配置微信登录参数",
         )
+    if not code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="缺少微信登录凭证 code",
+        )
 
     params = {
-        "appid": settings.WECHAT_APPID,
-        "secret": settings.WECHAT_SECRET,
-        "js_code": request.code,
+        "appid": appid,
+        "secret": secret,
+        "js_code": code,
         "grant_type": "authorization_code",
     }
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(WECHAT_API, params=params)
+            resp.raise_for_status()
             data = resp.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="微信登录服务返回了无效响应",
+        ) from exc
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="微信登录服务请求失败",
+            detail=f"微信登录服务请求失败: {str(exc)}",
         ) from exc
 
     if "errcode" in data and data["errcode"] != 0:
+        message = data.get("errmsg", "未知错误")
+        if data.get("errcode") == 40013:
+            message = "AppID 无效，请检查后端环境变量 WECHAT_APPID"
+        elif data.get("errcode") == 40125:
+            message = "AppSecret 无效，请检查后端环境变量 WECHAT_SECRET"
+        elif data.get("errcode") == 40029:
+            message = "登录 code 无效或已过期，请重新发起微信登录"
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"微信登录失败: {data.get('errmsg', '未知错误')}",
+            detail=f"微信登录失败: {message}",
         )
 
-    openid = data["openid"]
+    openid = data.get("openid")
+    if not openid:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="微信登录响应缺少 openid",
+        )
+
     unionid = data.get("unionid")
 
     result = await db.execute(

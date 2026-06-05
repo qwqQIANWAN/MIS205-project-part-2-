@@ -5,6 +5,10 @@ import prodConfig from './prod';
 import vitePluginImp from 'vite-plugin-imp';
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
+  const outputRoot =
+    process.env.TARO_OUTPUT_DIR ||
+    (process.env.TARO_ENV === 'h5' ? 'dist-h5' : 'dist');
+
   const baseConfig: UserConfigExport<'webpack5'> = {
     projectName: 'sx校友卡',
     date: '2025-12-10',
@@ -16,7 +20,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       828: 1.81 / 2,
     },
     sourceRoot: 'src',
-    outputRoot: process.env.TARO_OUTPUT_DIR || 'dist',
+    outputRoot,
     plugins: ['@tarojs/plugin-html'],
     defineConstants: {},
     copy: {

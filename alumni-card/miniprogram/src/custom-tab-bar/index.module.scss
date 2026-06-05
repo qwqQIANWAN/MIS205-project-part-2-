@@ -1,0 +1,74 @@
+@use '@/styles/variables.scss' as *;
+
+.wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  padding: 0 20rpx calc(env(safe-area-inset-bottom) + 12rpx);
+  pointer-events: none;
+}
+
+.bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 36rpx;
+  box-shadow: 0 -4rpx 24rpx rgba(15, 23, 42, 0.08);
+  padding: 14rpx 16rpx;
+  pointer-events: auto;
+}
+
+.item {
+  flex: 1;
+  @include flex-center;
+  flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.itemProminent {
+  transform: translateY(-16rpx);
+}
+
+.iconWrap {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: $radius-round;
+  background: #f4f7fb;
+  @include flex-center;
+}
+
+.iconWrapActive {
+  background: rgba(254, 0, 0, 0.12);
+}
+
+.iconWrapProminent {
+  width: 96rpx;
+  height: 96rpx;
+  background: linear-gradient(135deg, #fe0000 0%, #ff6b6b 100%);
+  box-shadow: 0 10rpx 28rpx rgba(254, 0, 0, 0.28);
+}
+
+.iconText {
+  font-size: 24rpx;
+  font-weight: $font-weight-semibold;
+  color: #64748b;
+}
+
+.iconTextProminent {
+  font-size: 34rpx;
+  color: #ffffff;
+}
+
+.label {
+  font-size: 22rpx;
+  color: #86909c;
+}
+
+.labelActive {
+  color: #fe0000;
+  font-weight: $font-weight-semibold;
+}

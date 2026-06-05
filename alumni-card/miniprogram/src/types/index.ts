@@ -26,6 +26,21 @@ export interface AssociationItem {
   memberCount: number;
   presidentName: string;
   description: string;
+  coverImage?: string;
+  province?: string;
+  district?: string;
+}
+
+export interface AlumniDirectoryItem {
+  id: number;
+  userId: number;
+  realName: string;
+  avatarUrl?: string;
+  className?: string;
+  graduationYear?: string;
+  currentUniversity?: string;
+  currentCollege?: string;
+  currentMajor?: string;
 }
 
 export interface ActivityItem {
@@ -48,6 +63,8 @@ export interface ArticleItem {
   url: string;
   coverImage: string;
   source: string;
+  category?: string;
+  createdAt?: string;
 }
 
 export interface InterviewItem {
@@ -71,6 +88,7 @@ export interface AppointmentItem {
   teacherComment?: string;
   teacherReviewedAt?: string;
   rejectReason?: string;
+  qrCode?: string;
   realName?: string;
   companions?: CompanionItem[];
 }

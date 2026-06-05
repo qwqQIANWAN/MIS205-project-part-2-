@@ -1,5 +1,11 @@
-from pydantic_settings import BaseSettings
+from pathlib import Path
 from typing import Optional
+
+from pydantic_settings import BaseSettings
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+ENV_FILE = BASE_DIR / ".env"
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "校友卡小程序"
@@ -39,7 +45,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["*"]
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_FILE
         case_sensitive = True
 
 settings = Settings()
