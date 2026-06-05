@@ -2,7 +2,7 @@
 
 ## 目标
 
-把当前项目从“本地上传一份代码到服务器”改为“本地提交到 GitHub，服务器执行 `git pull` 后重建容器”。
+把当前项目从“本地上传一份代码到服务器”改为“本地提交到 GitHub，服务器执行 `git pull` 后重建容器”，并统一部署 `alumni-card` 目录下的后端与管理后台。
 
 默认约定：
 
@@ -58,22 +58,32 @@ sudo apt update
 sudo apt install -y git
 ```
 
-### 2. 备份已有生产配置
+### 2. 备份并停用旧的本地部署
 
-如果你之前已经手动部署过，请先保留服务器上的 `.env`：
+如果你之前已经手动部署过，请先保留服务器上的 `.env`，并停止旧容器：
 
 ```bash
 cp /home/ubuntu/apps/alumni-card/.env /home/ubuntu/alumni-card.env.backup
+cd /home/ubuntu/apps/alumni-card
+docker compose -f docker/docker-compose.yml down || docker-compose -f docker/docker-compose.yml down
 ```
 
-### 3. 用 Git 仓库替换当前目录
+### 3. 用 Git 仓库接管服务器目录
 
-如果你准备直接用 Git 管理服务器目录，推荐这样做：
+项目已提供初始化脚本，会自动：
+
+- 检测当前目录是否还是手动部署版本
+- 尝试停止旧容器
+- 备份旧目录到时间戳目录
+- 克隆 GitHub 仓库
+- 自动恢复旧 `.env`
 
 ```bash
-mv /home/ubuntu/apps/alumni-card /home/ubuntu/apps/alumni-card.manual-backup
-git clone -b main <your-github-repo-url> /home/ubuntu/apps/alumni-card
-cp /home/ubuntu/alumni-card.env.backup /home/ubuntu/apps/alumni-card/.env
+cd /home/ubuntu
+git clone -b main <your-github-repo-url> repo-bootstrap-temp
+cd repo-bootstrap-temp/alumni-card
+chmod +x scripts/server-bootstrap.sh scripts/deploy.sh
+TARGET_DIR=/home/ubuntu/apps/alumni-card bash scripts/server-bootstrap.sh <your-github-repo-url> main
 ```
 
 ### 4. 赋予脚本执行权限并部署
@@ -83,6 +93,12 @@ cd /home/ubuntu/apps/alumni-card
 chmod +x scripts/deploy.sh scripts/server-bootstrap.sh
 bash scripts/deploy.sh main
 ```
+
+部署成功后，默认访问：
+
+- 管理后台：`http://服务器IP/`
+- 后端健康检查：`http://服务器IP/health`
+- FastAPI 文档：`http://服务器IP/docs`
 
 ## 日常更新流程
 
@@ -119,3 +135,4 @@ curl http://127.0.0.1/health
 - 服务器上的 `.env` 只保留在服务器本地。
 - 当前上传文件走 Docker volume，不受 `git pull` 影响。
 - 以后引入 Alembic 后，建议把数据库迁移命令并入 `scripts/deploy.sh`。
+- 管理后台默认与 Nginx 同源部署，生产环境接口地址推荐保持 `/api/v1`。

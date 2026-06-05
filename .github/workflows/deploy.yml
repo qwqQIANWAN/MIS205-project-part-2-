@@ -22,25 +22,33 @@ jobs:
         env:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
           DEPLOY_BRANCH: ${{ vars.DEPLOY_BRANCH }}
+          DEPLOY_SUBDIR: ${{ vars.DEPLOY_SUBDIR }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
           script_stop: true
-          envs: DEPLOY_PATH,DEPLOY_BRANCH
+          envs: DEPLOY_PATH,DEPLOY_BRANCH,DEPLOY_SUBDIR
           script: |
             set -euo pipefail
-            DEPLOY_PATH="${DEPLOY_PATH:-/home/ubuntu/apps/alumni-card}"
+            DEPLOY_PATH="${DEPLOY_PATH:-/home/ubuntu/apps/alumni-card-backup}"
             DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+            DEPLOY_SUBDIR="${DEPLOY_SUBDIR:-alumni-card}"
+            PROJECT_DIR="$DEPLOY_PATH/$DEPLOY_SUBDIR"
 
             if [ ! -d "$DEPLOY_PATH/.git" ]; then
               echo "Repository is not bootstrapped at $DEPLOY_PATH"
               echo "Run on server first:"
-              echo "  TARGET_DIR=$DEPLOY_PATH bash scripts/server-bootstrap.sh <your-github-repo-url> $DEPLOY_BRANCH"
+              echo "  TARGET_DIR=$DEPLOY_PATH bash $DEPLOY_SUBDIR/scripts/server-bootstrap.sh <your-github-repo-url> $DEPLOY_BRANCH"
               exit 1
             fi
 
-            cd "$DEPLOY_PATH"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "Project subdirectory not found: $PROJECT_DIR"
+              exit 1
+            fi
+
+            cd "$PROJECT_DIR"
             chmod +x scripts/deploy.sh scripts/server-bootstrap.sh
             bash scripts/deploy.sh "$DEPLOY_BRANCH"

@@ -3,6 +3,7 @@
 ## 目标架构
 
 - `Nginx`：对外暴露 80/443，反向代理后端，并提供上传文件访问。
+- `Nginx`：对外暴露 80/443，反向代理后端，并托管 `admin` 管理后台静态资源。
 - `FastAPI`：容器内运行，监听 `8000`，不直接暴露公网端口。
 - `PostgreSQL`：与后端部署在同一台轻量服务器，仅在 Docker 内网开放。
 - `uploads`：使用 Docker volume 持久化上传文件。
@@ -38,11 +39,34 @@ CORS_ORIGINS=["*"]
 ## 上线顺序
 
 1. 服务器安装 Docker 和 Docker Compose。
-2. 上传项目代码到服务器。
-3. 在项目根目录准备生产环境 `.env`。
-4. 执行 `docker compose -f docker/docker-compose.yml up -d --build`。
-5. 访问 `http://服务器IP/health` 检查后端和数据库状态。
-6. 拿到域名后，补 Nginx HTTPS 配置，再配置微信小程序合法域名。
+2. 若服务器上已有旧的本地部署版本，先执行停服和备份，再切换为 GitHub 仓库部署。
+3. 使用 GitHub 仓库初始化服务器目录。
+4. 在项目根目录准备生产环境 `.env`。
+5. 执行 `docker compose -f docker/docker-compose.yml up -d --build`。
+6. 访问 `http://服务器IP/health` 检查后端和数据库状态。
+7. 打开 `http://服务器IP/` 检查管理后台是否可访问。
+8. 拿到域名后，补 Nginx HTTPS 配置，再配置微信小程序合法域名。
+
+## 停用旧本地部署
+
+如果之前是手动上传代码到服务器，建议先执行：
+
+```bash
+cd /home/ubuntu/apps/alumni-card
+docker compose -f docker/docker-compose.yml down || docker-compose -f docker/docker-compose.yml down
+```
+
+然后使用仓库中的初始化脚本接管旧目录：
+
+```bash
+cd /home/ubuntu
+git clone -b main <your-github-repo-url> repo-bootstrap-temp
+cd repo-bootstrap-temp/alumni-card
+chmod +x scripts/server-bootstrap.sh
+TARGET_DIR=/home/ubuntu/apps/alumni-card bash scripts/server-bootstrap.sh <your-github-repo-url> main
+```
+
+脚本会自动备份旧目录，并尽量恢复原有 `.env`。
 
 ## 下一阶段建议
 

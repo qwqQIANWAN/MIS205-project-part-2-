@@ -48,6 +48,12 @@ npm install
 npm run dev
 ```
 
+如果需要让本地管理后台直接联调云服务器 API，可以先复制环境变量模板：
+
+```bash
+copy .env.example .env.local
+```
+
 启动成功后，在浏览器打开终端输出的本地地址，通常类似：
 
 ```text
@@ -153,7 +159,12 @@ docker-compose -f docker/docker-compose.yml up -d --build
 
 - `db`：PostgreSQL
 - `backend`：FastAPI
-- `nginx`：反向代理
+- `nginx`：反向代理 + 托管管理后台页面
+
+部署完成后，默认访问：
+
+- 后端健康检查：`http://服务器IP/health`
+- 管理后台：`http://服务器IP/`
 
 相关文件：
 

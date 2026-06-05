@@ -136,6 +136,7 @@ interface InterviewApiItem {
 const STORAGE_KEY_API_BASE_URL = 'alumni-admin-api-base-url';
 const STORAGE_KEY_TOKEN = 'alumni-admin-token';
 const STORAGE_KEY_SIMULATE_APPROVAL = 'alumni-admin-simulate-approval';
+const DEFAULT_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim().replace(/\/$/, '');
 
 const menuItems = [
   { key: 'dashboard', label: '数据看板' },
@@ -254,7 +255,7 @@ const demoInterviews: InterviewApiItem[] = [
 ];
 
 const activeMenu = ref<MenuKey>('dashboard');
-const apiBaseUrl = ref(localStorage.getItem(STORAGE_KEY_API_BASE_URL) || '');
+const apiBaseUrl = ref(localStorage.getItem(STORAGE_KEY_API_BASE_URL) || DEFAULT_API_BASE_URL);
 const token = ref(localStorage.getItem(STORAGE_KEY_TOKEN) || '');
 const simulateApproval = ref(localStorage.getItem(STORAGE_KEY_SIMULATE_APPROVAL) !== '0');
 const loading = ref(false);
@@ -967,7 +968,7 @@ onMounted(() => {
           <p class='headerDesc'>支持高中校友注册审核、老师档案维护与返校预约审批。</p>
         </div>
         <div class='headerTools'>
-          <el-input v-model='apiBaseUrl' placeholder='接口基础地址，例如 http://127.0.0.1/api/v1' class='input' />
+          <el-input v-model='apiBaseUrl' placeholder='接口基础地址，例如 /api/v1 或 http://127.0.0.1/api/v1' class='input' />
           <el-input v-model='token' placeholder='管理员令牌' class='input' show-password />
           <el-switch
             v-model='simulateApproval'
