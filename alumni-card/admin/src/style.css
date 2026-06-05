@@ -9,6 +9,10 @@
   --el-color-primary-light-8: #fecaca;
   --el-color-primary-light-9: #ffe5e5;
   --el-color-primary-dark-2: #cb0000;
+  --el-border-radius-base: 12px;
+  --el-border-radius-small: 10px;
+  --el-box-shadow-light: 0 12px 28px rgba(15, 23, 42, 0.08);
+  --el-bg-color-page: #f4f7fb;
 }
 
 * {
@@ -18,4 +22,23 @@
 body {
   margin: 0;
   min-width: 1280px;
+  background: radial-gradient(circle at top left, #fff5f5 0%, #f6f8fc 40%, #edf2ff 100%);
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.el-card {
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.el-table {
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-row-hover-bg-color: #fff7f7;
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  box-shadow: none !important;
 }

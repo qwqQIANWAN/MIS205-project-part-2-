@@ -27,4 +27,5 @@ export const STORAGE_KEY_API_BASE_URL = 'apiBaseUrl';
 export const STORAGE_KEY_TOKEN = 'alumni-card-token';
 export const STORAGE_KEY_APPOINTMENTS = 'alumni-card-appointments';
 export const STORAGE_KEY_PREVIEW_PROFILE = 'alumni-card-preview-profile';
+export const STORAGE_KEY_JOINED_ASSOCIATIONS = 'alumni-card-joined-associations';
 export const PREVIEW_MOCK_TOKEN = 'alumni-card-preview-token';

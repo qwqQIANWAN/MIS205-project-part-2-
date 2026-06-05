@@ -29,6 +29,7 @@ export interface AssociationItem {
   coverImage?: string;
   province?: string;
   district?: string;
+  isJoined?: boolean;
 }
 
 export interface AlumniDirectoryItem {

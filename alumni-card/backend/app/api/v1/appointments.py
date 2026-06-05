@@ -132,7 +132,6 @@ async def admin_appointments(
     query = (
         select(Appointment)
         .options(selectinload(Appointment.teacher))
-        .distinct(Appointment.id)
         .order_by(Appointment.created_at.desc())
     )
     count_query = select(func.count()).select_from(Appointment)

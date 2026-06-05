@@ -139,14 +139,14 @@ const STORAGE_KEY_SIMULATE_APPROVAL = 'alumni-admin-simulate-approval';
 const DEFAULT_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim().replace(/\/$/, '');
 
 const menuItems = [
-  { key: 'dashboard', label: '数据看板' },
-  { key: 'alumni', label: '校友审核' },
-  { key: 'teachers', label: '老师管理' },
-  { key: 'appointments', label: '返校预约' },
-  { key: 'associations', label: '校友会管理' },
-  { key: 'activities', label: '活动管理' },
-  { key: 'articles', label: '文章管理' },
-  { key: 'interviews', label: '校友风采' },
+  { key: 'dashboard', label: '数据看板', hint: '查看全局业务概况' },
+  { key: 'alumni', label: '校友审核', hint: '处理认证与资料审核' },
+  { key: 'teachers', label: '老师管理', hint: '维护老师档案与绑定状态' },
+  { key: 'appointments', label: '返校预约', hint: '跟踪返校申请审批流程' },
+  { key: 'associations', label: '校友会管理', hint: '维护地区组织信息' },
+  { key: 'activities', label: '活动管理', hint: '查看活动与报名状态' },
+  { key: 'articles', label: '文章管理', hint: '维护公众号文章内容' },
+  { key: 'interviews', label: '校友风采', hint: '展示优秀校友故事' },
 ] as const;
 
 const demoAlumni: AlumniApiItem[] = [
@@ -297,6 +297,9 @@ const canSimulateApproval = computed(() => !canUseLiveApi.value && simulateAppro
 const currentMenuLabel = computed(() => menuItems.find((item) => item.key === activeMenu.value)?.label || '数据列表');
 const showCreateTeacher = computed(() => activeMenu.value === 'teachers');
 const showCreateArticle = computed(() => activeMenu.value === 'articles');
+const currentMenuHint = computed(() => menuItems.find((item) => item.key === activeMenu.value)?.hint || '查看当前模块数据');
+const connectionStatusText = computed(() => (canUseLiveApi.value ? '已连接实时接口' : '当前使用演示数据'));
+const connectionStatusType = computed(() => (canUseLiveApi.value ? 'success' : 'warning'));
 
 const currentRows = computed(() => {
   switch (activeMenu.value) {
@@ -952,32 +955,48 @@ onMounted(() => {
 <template>
   <el-container class='layout'>
     <el-aside width='220px' class='aside'>
-      <div class='brand'>sx校友卡后台</div>
-      <div class='brandHint'>高中校友认证与返校审批</div>
+      <div class='brandPanel'>
+        <div class='brand'>sx校友卡后台</div>
+        <div class='brandHint'>高中校友认证与返校审批</div>
+        <div class='brandMeta'>Admin Console</div>
+      </div>
       <el-menu :default-active='activeMenu' class='menu' @select='handleMenuSelect'>
         <el-menu-item v-for='item in menuItems' :key='item.key' :index='item.key'>
-          {{ item.label }}
+          <div class='menuItemContent'>
+            <div class='menuItemTitle'>{{ item.label }}</div>
+            <div class='menuItemHint'>{{ item.hint }}</div>
+          </div>
         </el-menu-item>
       </el-menu>
     </el-aside>
 
     <el-container>
       <el-header class='header'>
-        <div>
-          <h2 class='headerTitle'>sx校友卡管理看板</h2>
-          <p class='headerDesc'>支持高中校友注册审核、老师档案维护与返校预约审批。</p>
+        <div class='headerIntro'>
+          <div class='headerEyebrow'>高中校友数字化服务平台</div>
+          <h2 class='headerTitle'>{{ currentMenuLabel }}</h2>
+          <p class='headerDesc'>{{ currentMenuHint }}</p>
+          <div class='headerMeta'>
+            <el-tag effect='dark' round :type="connectionStatusType">{{ connectionStatusText }}</el-tag>
+            <el-tag round type='info'>支持校友、老师、预约、内容一体化管理</el-tag>
+          </div>
         </div>
-        <div class='headerTools'>
-          <el-input v-model='apiBaseUrl' placeholder='接口基础地址，例如 /api/v1 或 http://127.0.0.1/api/v1' class='input' />
-          <el-input v-model='token' placeholder='管理员令牌' class='input' show-password />
-          <el-switch
-            v-model='simulateApproval'
-            inline-prompt
-            active-text='模拟审批'
-            inactive-text='只读'
-            @change="localStorage.setItem(STORAGE_KEY_SIMULATE_APPROVAL, simulateApproval ? '1' : '0')"
-          />
-          <el-button type='primary' @click='applyConnectionSettings'>连接接口</el-button>
+        <div class='headerToolsCard'>
+          <div class='headerToolsTitle'>接口连接</div>
+          <div class='headerTools'>
+            <el-input v-model='apiBaseUrl' placeholder='接口基础地址，例如 /api/v1 或 http://127.0.0.1/api/v1' class='input' />
+            <el-input v-model='token' placeholder='管理员令牌' class='input' show-password />
+            <div class='headerActions'>
+              <el-switch
+                v-model='simulateApproval'
+                inline-prompt
+                active-text='模拟审批'
+                inactive-text='只读'
+                @change="localStorage.setItem(STORAGE_KEY_SIMULATE_APPROVAL, simulateApproval ? '1' : '0')"
+              />
+              <el-button type='primary' @click='applyConnectionSettings'>连接接口</el-button>
+            </div>
+          </div>
         </div>
       </el-header>
 
@@ -998,11 +1017,14 @@ onMounted(() => {
             :closable='false'
             class='notice'
           />
-          <el-row :gutter='16'>
+          <el-row :gutter='16' class='statsRow'>
             <el-col v-for='item in stats' :key='item.label' :span='6'>
               <el-card shadow='hover' class='statCard'>
+                <div class='statTop'>
+                  <div class='statLabel'>{{ item.label }}</div>
+                  <div class='statDot'></div>
+                </div>
                 <div class='statValue'>{{ item.value }}</div>
-                <div class='statLabel'>{{ item.label }}</div>
                 <div class='statHint'>{{ item.hint }}</div>
               </el-card>
             </el-col>
@@ -1010,7 +1032,9 @@ onMounted(() => {
           <el-row :gutter='16' class='tableCard'>
             <el-col :span='12'>
               <el-card shadow='never' class='summaryCard'>
-                <template #header>流程说明</template>
+                <template #header>
+                  <div class='summaryHeader'>流程说明</div>
+                </template>
                 <p>1. 用户先在“我的”页面完成姓名和手机号注册。</p>
                 <p>2. 再补充高中班级、毕业届次、当前高校信息并上传学生证或毕业证。</p>
                 <p>3. 管理员在本后台审核资料，审核通过后用户才可提交返校预约。</p>
@@ -1019,7 +1043,9 @@ onMounted(() => {
             </el-col>
             <el-col :span='12'>
               <el-card shadow='never' class='summaryCard'>
-                <template #header>当前重点</template>
+                <template #header>
+                  <div class='summaryHeader'>当前重点</div>
+                </template>
                 <p>校友审核：展示班级、毕业届次、当前高校/院系/专业与证件图。</p>
                 <p>老师管理：后台可创建老师档案，供小程序预约选择和老师账号绑定。</p>
                 <p>预约审批：可查看参访老师、审批意见、拒绝原因和二维码有效期。</p>
@@ -1111,8 +1137,15 @@ onMounted(() => {
             </el-form>
           </div>
 
-          <el-table :data='currentRows' v-loading='loading'>
-            <el-table-column v-for='column in currentColumns' :key='column.prop' :prop='column.prop' :label='column.label' :width='column.width' :min-width='column.minWidth'>
+          <el-table :key='activeMenu' :data='currentRows' row-key='id' v-loading='loading'>
+            <el-table-column
+              v-for='column in currentColumns'
+              :key='`${activeMenu}-${column.prop}`'
+              :prop='column.prop'
+              :label='column.label'
+              :width='column.width'
+              :min-width='column.minWidth'
+            >
               <template #default='scope'>
                 <el-tag
                   v-if="['verification_status', 'status', 'is_published', 'is_active'].includes(column.prop)"
@@ -1127,7 +1160,7 @@ onMounted(() => {
               <template #default='scope'>
                 <el-button
                   v-for='action in currentActions'
-                  :key='action'
+                  :key='`${activeMenu}-${action}`'
                   link
                   :type="action === '通过' ? 'success' : action === '拒绝' ? 'danger' : 'primary'"
                   @click="handleAction(action, scope.row)"
@@ -1158,40 +1191,62 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.layout { min-height: 100vh; background: #f5f7fb; }
-.aside { background: linear-gradient(180deg, #fe0000 0%, #b40000 100%); color: #fff; }
-.brand { padding: 24px 20px 6px; font-size: 20px; font-weight: 700; }
-.brandHint { padding: 0 20px 20px; color: rgba(255, 255, 255, 0.7); font-size: 13px; }
+.layout { min-height: 100vh; background: radial-gradient(circle at top left, #fff5f5 0%, #f6f8fc 40%, #edf2ff 100%); }
+.aside { padding: 18px 14px; background: linear-gradient(180deg, #7f1d1d 0%, #b91c1c 42%, #ef4444 100%); color: #fff; box-shadow: 8px 0 32px rgba(15, 23, 42, 0.08); }
+.brandPanel { padding: 20px 18px 18px; margin-bottom: 14px; border-radius: 24px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(10px); }
+.brand { font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
+.brandHint { margin-top: 8px; color: rgba(255, 255, 255, 0.78); font-size: 13px; line-height: 1.6; }
+.brandMeta { margin-top: 14px; display: inline-flex; padding: 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .menu { border-right: none; background: transparent; }
-.header { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: auto; padding: 24px 28px 12px; background: transparent; }
-.headerTitle { margin: 0; font-size: 28px; }
-.headerDesc { margin: 8px 0 0; color: #64748b; }
-.headerTools { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-.input { width: 280px; }
+.menu :deep(.el-menu-item) { height: auto; min-height: 74px; margin-bottom: 8px; border-radius: 18px; color: #fff; line-height: 1.3; white-space: normal; }
+.menu :deep(.el-menu-item:hover) { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.menu :deep(.el-menu-item.is-active) { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.menuItemContent { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; }
+.menuItemTitle { font-size: 18px; font-weight: 700; color: #fff; }
+.menuItemHint { font-size: 13px; color: rgba(255, 255, 255, 0.82); }
+.header { display: grid; grid-template-columns: minmax(0, 1fr) 480px; gap: 20px; height: auto; padding: 28px 28px 8px; background: transparent; }
+.headerIntro { padding: 28px 30px; border-radius: 28px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 100%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); }
+.headerEyebrow { display: inline-flex; padding: 6px 12px; border-radius: 999px; background: rgba(254, 0, 0, 0.08); color: #b91c1c; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+.headerTitle { margin: 16px 0 0; font-size: 32px; line-height: 1.2; color: #0f172a; }
+.headerDesc { margin: 10px 0 0; color: #64748b; font-size: 14px; line-height: 1.7; }
+.headerMeta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.headerToolsCard { padding: 24px; border-radius: 28px; background: linear-gradient(160deg, #fff 0%, #f8fafc 100%); border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); }
+.headerToolsTitle { margin-bottom: 16px; font-size: 15px; font-weight: 700; color: #0f172a; }
+.headerTools { display: flex; flex-direction: column; gap: 12px; }
+.headerActions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.input { width: 100%; }
 .main { padding: 12px 28px 28px; }
-.notice { margin-bottom: 20px; }
-.statCard { border-radius: 18px; }
-.statValue { font-size: 30px; font-weight: 700; color: #fe0000; }
-.statLabel { margin-top: 6px; font-size: 15px; color: #0f172a; }
-.statHint { margin-top: 8px; color: #64748b; line-height: 1.5; }
-.tableCard { margin-top: 20px; border-radius: 18px; }
-.summaryCard { height: 100%; border-radius: 18px; }
-.summaryCard p { margin: 0 0 12px; color: #475569; line-height: 1.7; }
+.notice { margin-bottom: 16px; border-radius: 16px; }
+.statsRow { margin-top: 8px; }
+.statCard { border-radius: 22px; border: none; box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06); overflow: hidden; }
+.statTop { display: flex; align-items: center; justify-content: space-between; }
+.statDot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #fe0000 0%, #fb7185 100%); box-shadow: 0 0 0 6px rgba(254, 0, 0, 0.08); }
+.statValue { margin-top: 18px; font-size: 36px; font-weight: 700; color: #b91c1c; line-height: 1; }
+.statLabel { font-size: 14px; color: #334155; font-weight: 600; }
+.statHint { margin-top: 12px; color: #64748b; line-height: 1.7; font-size: 13px; }
+.tableCard { margin-top: 20px; border-radius: 22px; border: none; box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06); }
+.summaryCard { height: 100%; border-radius: 20px; border: none; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+.summaryHeader { font-size: 16px; font-weight: 700; color: #0f172a; }
+.summaryCard p { margin: 0 0 12px; color: #475569; line-height: 1.8; }
 .summaryCard p:last-child { margin-bottom: 0; }
 .cardHeader { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.cardTitle { font-size: 18px; font-weight: 700; color: #0f172a; }
-.cardDesc { margin-top: 6px; color: #64748b; }
-.toolbar { display: flex; gap: 12px; }
-.teacherFormWrap { margin-bottom: 18px; padding: 16px 16px 4px; background: #f8fafc; border-radius: 14px; }
+.cardTitle { font-size: 20px; font-weight: 700; color: #0f172a; }
+.cardDesc { margin-top: 8px; color: #64748b; line-height: 1.7; }
+.toolbar { display: flex; gap: 12px; align-items: center; }
+.teacherFormWrap { margin-bottom: 18px; padding: 18px 18px 6px; background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%); border: 1px solid #eef2f7; border-radius: 18px; }
 .teacherForm { display: flex; flex-wrap: wrap; }
 .articleForm :deep(.el-form-item) { margin-bottom: 14px; }
 .articleToolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 12px; }
 .detailRawTitle { margin-bottom: 16px; font-size: 18px; font-weight: 700; color: #0f172a; }
 .detailGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.detailItem { padding: 14px; background: #f8fafc; border-radius: 12px; }
+.detailItem { padding: 16px; background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%); border-radius: 14px; border: 1px solid #eef2f7; }
 .detailLabel { margin-bottom: 6px; color: #64748b; font-size: 13px; }
-.detailValue { color: #0f172a; line-height: 1.6; }
+.detailValue { color: #0f172a; line-height: 1.7; }
 .detailImageWrap { margin-top: 18px; }
 .detailImage { width: 100%; max-height: 360px; object-fit: contain; border-radius: 14px; background: #f8fafc; }
 .preWrap { white-space: pre-wrap; word-break: break-word; }
+
+@media (max-width: 1440px) {
+  .header { grid-template-columns: 1fr; }
+}
 </style>

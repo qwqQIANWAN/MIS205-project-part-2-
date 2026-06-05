@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View } from '@tarojs/components';
+import { Image, Text, View } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
+import homeEmblem from '@/assets/home-emblem.svg';
 
 const tabs = [
   { text: '校友', path: '/pages/alumni/index', icon: '友' },
@@ -50,9 +51,11 @@ function CustomTabBar() {
                   tab.prominent ? styles.iconWrapProminent : ''
                 }`}
               >
-                <Text className={`${styles.iconText} ${tab.prominent ? styles.iconTextProminent : ''}`}>
-                  {tab.icon}
-                </Text>
+                {tab.prominent ? (
+                  <Image className={styles.prominentImage} src={homeEmblem} mode='aspectFit' />
+                ) : (
+                  <Text className={styles.iconText}>{tab.icon}</Text>
+                )}
               </View>
               <Text className={`${styles.label} ${active ? styles.labelActive : ''}`}>{tab.text}</Text>
             </View>

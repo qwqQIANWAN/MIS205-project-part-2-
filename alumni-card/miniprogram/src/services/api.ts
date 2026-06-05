@@ -28,6 +28,7 @@ import {
   PREVIEW_MOCK_TOKEN,
   STORAGE_KEY_API_BASE_URL,
   STORAGE_KEY_APPOINTMENTS,
+  STORAGE_KEY_JOINED_ASSOCIATIONS,
   STORAGE_KEY_PREVIEW_PROFILE,
   STORAGE_KEY_TOKEN,
 } from './config';
@@ -286,6 +287,18 @@ function getLocalAppointments(): AppointmentItem[] {
   return local && local.length ? local : mockAppointments;
 }
 
+function getJoinedAssociationIds(): number[] {
+  const local = Taro.getStorageSync<number[]>(STORAGE_KEY_JOINED_ASSOCIATIONS);
+  return Array.isArray(local) ? local : [];
+}
+
+function setJoinedAssociationIds(ids: number[]) {
+  Taro.setStorageSync(
+    STORAGE_KEY_JOINED_ASSOCIATIONS,
+    Array.from(new Set(ids)).filter((item) => typeof item === 'number'),
+  );
+}
+
 function mapTeacher(item: BackendTeacher): TeacherItem {
   return {
     id: item.id,
@@ -309,6 +322,7 @@ function mapAssociation(item: BackendAssociation): AssociationItem {
     coverImage: resolveAssetUrl(item.cover_image),
     province: item.province || '',
     district: item.district || '',
+    isJoined: false,
   };
 }
 
@@ -616,14 +630,38 @@ export async function bindTeacherIdentity(payload: { name: string; phone: string
 }
 
 export async function getAssociations(): Promise<AssociationItem[]> {
-  if (!hasToken() || shouldUseMockContentApi()) return mockAssociations;
+  const joinedIds = getJoinedAssociationIds();
+  if (!hasToken() || shouldUseMockContentApi()) {
+    return mockAssociations.map((item) => ({ ...item, isJoined: joinedIds.includes(item.id) }));
+  }
   try {
     const response = await request<PaginatedResult<BackendAssociation>>('/associations');
-    return response.items?.map(mapAssociation) || mockAssociations;
+    return (
+      response.items?.map((item) => {
+        const association = mapAssociation(item);
+        return {
+          ...association,
+          isJoined: joinedIds.includes(association.id),
+        };
+      }) || mockAssociations.map((item) => ({ ...item, isJoined: joinedIds.includes(item.id) }))
+    );
   } catch (error) {
     console.error('[MiniApp] getAssociations failed', error);
-    return mockAssociations;
+    return mockAssociations.map((item) => ({ ...item, isJoined: joinedIds.includes(item.id) }));
   }
+}
+
+export async function joinAssociation(id: number): Promise<void> {
+  const joinedIds = getJoinedAssociationIds();
+  if (joinedIds.includes(id)) return;
+
+  if (hasToken() && !isPreviewMockToken() && !shouldUseMockContentApi()) {
+    await request(`/associations/${id}/join`, {
+      method: 'POST',
+    });
+  }
+
+  setJoinedAssociationIds([...joinedIds, id]);
 }
 
 export async function getAlumniDirectory(keyword = ''): Promise<AlumniDirectoryItem[]> {

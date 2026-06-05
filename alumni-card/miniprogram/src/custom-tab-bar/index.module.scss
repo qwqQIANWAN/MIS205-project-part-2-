@@ -30,7 +30,7 @@
 }
 
 .itemProminent {
-  transform: translateY(-16rpx);
+  transform: translateY(-14rpx);
 }
 
 .iconWrap {
@@ -46,10 +46,11 @@
 }
 
 .iconWrapProminent {
-  width: 96rpx;
-  height: 96rpx;
-  background: linear-gradient(135deg, #fe0000 0%, #ff6b6b 100%);
-  box-shadow: 0 10rpx 28rpx rgba(254, 0, 0, 0.28);
+  width: 88rpx;
+  height: 88rpx;
+  background: linear-gradient(180deg, #fff6f6 0%, #ffffff 100%);
+  border: 2rpx solid rgba(254, 0, 0, 0.1);
+  box-shadow: 0 12rpx 28rpx rgba(254, 0, 0, 0.16);
 }
 
 .iconText {
@@ -61,6 +62,11 @@
 .iconTextProminent {
   font-size: 34rpx;
   color: #ffffff;
+}
+
+.prominentImage {
+  width: 46rpx;
+  height: 46rpx;
 }
 
 .label {

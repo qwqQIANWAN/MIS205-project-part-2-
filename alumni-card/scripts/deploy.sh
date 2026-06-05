@@ -34,6 +34,6 @@ git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
 echo "Rebuilding and restarting containers ..."
-compose_cmd -f "$PROJECT_DIR/docker/docker-compose.yml" up -d --build --remove-orphans
+compose_cmd --env-file "$PROJECT_DIR/.env" -f "$PROJECT_DIR/docker/docker-compose.yml" up -d --build --remove-orphans
 
 echo "Deployment completed."
