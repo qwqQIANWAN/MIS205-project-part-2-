@@ -5,6 +5,17 @@ set -euo pipefail
 BRANCH="${1:-main}"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+compose_cmd() {
+  if docker compose version >/dev/null 2>&1; then
+    docker compose "$@"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    docker-compose "$@"
+  else
+    echo "Error: docker compose is not installed."
+    exit 1
+  fi
+}
+
 cd "$PROJECT_DIR"
 
 if [ ! -d .git ]; then
@@ -23,6 +34,6 @@ git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
 echo "Rebuilding and restarting containers ..."
-docker-compose -f docker/docker-compose.yml up -d --build
+compose_cmd -f docker/docker-compose.yml up -d --build --remove-orphans
 
 echo "Deployment completed."
