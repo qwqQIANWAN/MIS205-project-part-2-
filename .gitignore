@@ -48,3 +48,11 @@ docker-compose.override.yml
 
 # Logs
 *.log
+
+# Root-level legacy project copies kept locally but no longer tracked
+/admin/
+/backend/
+/docker/
+/miniprogram/
+/scripts/
+/alumni-card-demo-system/
